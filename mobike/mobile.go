@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 	"strconv"
+	log "go-crawler/util"
 )
 
 const (
@@ -38,7 +39,7 @@ const (
 )
 
 var (
-	logger     = Logger{Enabled: true}
+	logger     = log.Logger{Enabled: true}
 	caCertPath = "D:/zhongliang/go/src/go-crawler/conf/mobike.cer"
 
 	contentType = "application/x-www-form-urlencoded"
