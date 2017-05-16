@@ -14,7 +14,6 @@ import (
 	"strconv"
 	"encoding/base64"
 	"encoding/json"
-	"bytes"
 )
 
 const (
@@ -261,35 +260,35 @@ func Main() {
 	//client := new(HttpClient)
 	//client.Init()
 	//client.Step1()
-	values := url.Values{}
-	values.Add("deviceId","A0000062FFCA19")
+	values := make(map[string]string)
+	values["deviceId"]="A0000062FFCA19"
+	values["chnanle"]="2031"
+	values["version"]="2.0.0"
+	values["platform"]="android"
 	Post("http://mip.m.womai.com/tinker/tinkerPatch.action",values)
 }
 
 //post数据
-func Post(u string, body url.Values) (err error){
+func Post(u string, body interface{}) (err error){
 	client := new(HttpClient)
 	client.Init()
-
-	/*
-	Map requestMap = new HashMap();
-	requestMap.put("common", commonData);
-	requestMap.put("data", paramsObject);
-	String requestDataStr = JacksonUtil.toJson(requestMap);
-	String encryptedRequestData = new String(Base64.encodeBase64(requestDataStr.getBytes()), "UTF-8");
-	*/
 	//values := url.Values{}
 	values := map[string]interface{}{
 		"common":"",
 		"data":body,
 	}
 	b,err := json.Marshal(values)
+
+	logger.Info(string(b))
 	if err!=nil{
 		logger.Error(err.Error())
 		return err
 	}
+	data := base64Encode(b)
+	v := url.Values{}
+	v.Add("data",string(data))
 
-	resp, err := client.Post(u,contentType ,bytes.NewReader(base64Encode(b)))
+	resp, err := client.Post(u,contentType ,strings.NewReader(v.Encode()))
 	if err != nil {
 		logger.Error("登录失败：" + err.Error())
 		return err
@@ -306,6 +305,17 @@ func Post(u string, body url.Values) (err error){
 	}
 	client.SaveCookie()
 	logger.Info("相应内容=%s", content)
+
+	m:=make(map[string]string)
+	e:=json.Unmarshal(content,&m)
+	if e!=nil{
+		panic(e)
+	}
+	b1,e := base64Decode([]byte(m["data"]))
+	if e!=nil{
+		panic(e)
+	}
+	logger.Info(string(b1))
 	return err
 }
 
